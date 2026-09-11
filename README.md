@@ -144,6 +144,12 @@ TopicLens-Access/
 5. 整理统一的 Getting Started 与认证说明；
 6. 在公开前完成安全边界和敏感信息检查。
 
+## License
+
+本仓库采用 [MIT License](LICENSE)。
+
+MIT 仅适用于 `TopicLens-Access` 仓库中公开的访问层代码、客户端、Skill、MCP、SDK、示例与文档。TopicLens Core 为独立的私有商业系统，不因本仓库采用 MIT 而开放或授权其后端实现、数据和知识资产。
+
 ---
 
 **TopicLens Access** 负责让 TopicLens 被使用；**TopicLens Core** 负责真正完成研究并积累知识。
