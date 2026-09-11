@@ -1,176 +1,149 @@
-# deepFlow
+# TopicLens Access
 
-> 统一研究入口 · Skill / MCP / Agent 接入层 · 开发中
+> TopicLens 的公开访问、集成与使用入口
+
+`TopicLens-Access` 是 **TopicLens · 主题透视** 的公开 Access Layer。
+
+TopicLens 核心系统负责领域知识、研究执行与长期知识积累；本仓库不包含核心后端实现，而是用于公开用户和 Agent 可以如何访问、集成和使用 TopicLens。
 
 ## 项目定位
 
-deepFlow 是整个研究体系的**统一入口层（Research Entry / Interface Layer）**。
+TopicLens 是一套面向专业领域、以 Topic 为中心、由长期领域知识支撑的 Deep Research 系统。
 
-它面向用户、Agent 和外部软件，负责理解研究意图、加载必要配置与 Research Plan、整理和校验参数，并将自然语言或上游请求转换为后端可以稳定执行的标准化研究请求。
+本仓库主要回答一个问题：
 
-deepFlow 可以表现为：
+> **用户、Agent 和其他软件如何使用 TopicLens？**
 
-- Skill；
-- MCP 入口；
-- API；
-- Web / Chat 入口；
-- 其他 Agent 的研究能力入口。
+它与 TopicLens 私有核心系统之间通过稳定、受控的服务接口连接。
 
-WorkBuddy 是当前的重要使用场景之一，但 deepFlow 的长期定位不限定于 WorkBuddy。
+```mermaid
+flowchart TD
+    U["User / Agent / Application"] --> A["TopicLens Access"]
 
-它主要回答一个问题：
+    A --> W["Official Web"]
+    A --> M["WeChat Mini Program"]
+    A --> S["Self-hosted Web"]
+    A --> G["Agent Skill / MCP"]
+    A --> D["API / SDK / Docs"]
 
-> **用户或上游 Agent 想研究什么？**
+    W --> API["Public Service Interface"]
+    M --> API
+    S --> API
+    G --> API
+    D --> API
 
-图书馆类比：**总服务台 / 窗口服务人员**。
-
-## 与 deepGraph / deepField 的关系
-
-| 项目 | 定位 | 图书馆类比 | 核心职责 |
-| --- | --- | --- | --- |
-| **deepFlow** | Research Entry / Interface Layer | 总服务台 / 窗口服务 | 接待请求、理解意图、形成标准化研究任务 |
-| [deepGraph](https://github.com/zkzchb/deepGraph) | Research Orchestrator | 检索馆员 / 参考咨询馆员 | 拆解任务、编排工具、维护状态、交叉验证与综合 |
-| [deepField](https://github.com/zkzchb/deepField) | Industry-native Research Service | 本馆馆藏 + 特色资源 + 专题编研 | 长期积累行业资料、证据和知识状态，并独立提供专业研究服务 |
-| External Research Providers | 外部研究能力 | 馆际互借 / 文献传递 | 提供通用 Deep Research、论文检索、网页与专业数据能力 |
-
-完整概念定义以 [deepField Canonical Glossary](https://github.com/zkzchb/deepField/blob/main/docs/glossary.md) 为当前统一术语来源。
-
-## 当前总体链路
-
-```text
-用户 / Agent / 软件
-        │
-        ▼
-     deepFlow
-  ├─ 理解研究意图
-  ├─ 加载配置 / Research Plan
-  ├─ 参数补全、规范化与校验
-  └─ 生成标准化 Research Request / Command
-        │
-        ▼
-     deepGraph
-  Research Orchestrator
-        │
-        ├─ Public Research Providers
-        ├─ Academic / Search / Data Tools
-        └─ deepField Provider 接口（当前预留，暂不依赖）
-        │
-        ▼
-任务状态 / 阶段进展 / 最终结果
-        │
-        ▼
-     deepFlow
-        │
-        ▼
-用户 / Agent / 软件
+    API --> T["TopicLens Core\nPrivate Backend"]
 ```
 
-## 核心职责
+## 计划公开的访问路径
 
-### 1. 理解研究意图
+### 官方 Web
 
-识别用户或上游 Agent 当前希望执行的研究动作，例如：
+TopicLens 官方提供的浏览器访问入口。
 
-- 发起一次研究；
-- 运行既有 Research Plan；
-- 查询已有任务进展；
-- 继续或补充既有研究；
-- 指定约束、地区、时间范围或输出形式。
+用于直接发起研究、查看研究状态与结果，并逐步承载 Topic、历史研究和其他面向最终用户的功能。
 
-### 2. 加载配置与 Research Plan
+### 微信小程序
 
-deepFlow 自身不承担个人研究计划的权威存储。
+面向微信生态的轻量访问入口。
 
-当前工作流配置、Research Plan 和主题定义仍可由 [MyWorkflow/deepFlow](https://github.com/zkzchb/MyWorkflow/tree/main/deepFlow) 提供。
+用于移动端快速提问、查看研究结果、接收任务状态等。具体能力以后端公开接口为准。
 
-### 3. 将请求编译为标准化任务
+### 自托管 Web
 
-deepFlow 将用户输入、上游 Agent 上下文、工作流配置、Research Plan 和本次临时要求合并为后端可验证的标准请求。
+提供可自行部署的 Web 客户端或参考实现。
 
-这一层重点处理：
+自托管仅意味着用户可以部署自己的访问界面，并不意味着 TopicLens 核心后端代码开放。客户端通过公开服务接口访问 TopicLens。
 
-- 任务和计划识别；
-- 必要参数补全；
-- 默认值与临时覆盖值合并；
-- 参数类型和取值校验；
-- 输出要求规范化；
-- 后端请求构造。
+### Agent Skill / MCP
 
-### 4. 调用研究后端
+为 Codex、Claude Code、WorkBuddy、OpenClaw 及其他支持 Skill / MCP / Tool Calling 的 Agent 提供机器访问方式。
 
-当前主要后端是 deepGraph。
+对 Agent 暴露的能力将采用明确的 TopicLens 命名空间，例如：
 
-deepFlow 只通过稳定接口与 deepGraph 交互，不复制 deepGraph 的 Graph、路由、工具执行和状态维护逻辑。
+```text
+topiclens-research
+topiclens.search
+topiclens.research
+topiclens.status
+```
 
-未来如有必要，也可以对接其他兼容的研究后端，但不在当前阶段展开。
+具体 Tool / Skill Contract 将随公开接口逐步稳定。
 
-### 5. 返回状态与结果
+### API / SDK
 
-deepGraph 返回的任务 ID、状态、阶段进展、最终结果和错误信息，由 deepFlow 转换为适合当前调用方继续处理的响应。
+后续可根据实际使用需求提供稳定 API、参考客户端和 SDK。
 
-调用方可以是 WorkBuddy，也可以是其他 Agent、MCP Client、API Client 或未来的 UI。
+公开内容包括接口定义、认证方式、请求与响应格式、示例代码和错误处理说明；不公开服务端内部 Router / Graph / Field 的实现细节。
 
-## 无状态原则
+## 与 TopicLens Core 的边界
 
-deepFlow 保持尽可能无状态：
+`TopicLens-Access` 与 TopicLens 核心仓库严格分离。
 
-- 不保存 LangGraph checkpoint；
-- 不成为任务历史的事实源；
-- 不承担长期研究成果存储；
-- 不把研究知识沉淀在入口 Skill / MCP 自身；
-- 一次调用所需的信息应来自当前上下文、外部配置和后端返回状态。
+公开仓库可以包含：
 
-这使 deepFlow 可以独立安装、升级和替换。
+- Web / 小程序等访问端代码；
+- Agent Skill、MCP Server 或适配器；
+- API / SDK 客户端；
+- 配置模板；
+- 示例程序；
+- 部署脚本；
+- 用户文档、集成文档与使用说明；
+- 公开接口 Schema 与兼容性说明。
 
-## 不属于 deepFlow 的职责
+本仓库不包含：
 
-以下能力不应进入本项目：
+- TopicLens Core 后端源码；
+- Router 的核心研究决策逻辑；
+- Graph 的研究执行与编排实现；
+- Field 的私有数据、知识库、Catalog、Evidence Store；
+- 内部 Prompt、私有 Provider 配置与商业策略；
+- 生产环境凭据、密钥与内部基础设施配置。
 
-- 复杂研究流程编排；
-- checkpoint、队列和运行时持久化；
-- 搜索、抓取、RAG、分析模型等研究工具的具体执行；
-- deepField 的行业数据、Research Catalog、Evidence 或 Knowledge；
-- 长期研究成果与个人知识库；
-- 用户秘密和第三方凭据的版本控制存储。
+## 设计原则
 
-## IO / Contract
+1. **Open Access, Private Core** — 访问方式和集成能力可以开放，核心研究系统保持私有。
+2. **Stable Contract** — Access 层只依赖稳定、版本化的公开接口，不依赖后端内部实现。
+3. **Multiple Entrances, One Service** — Web、小程序、Skill、MCP、API 等只是不同入口，共享同一 TopicLens 服务能力。
+4. **Replaceable Clients** — 任一客户端都应可以独立升级或替换，而不影响核心研究系统。
+5. **No Backend Leakage** — 不通过公开仓库泄露内部数据结构、私有知识资产或后端实现细节。
 
-deepFlow 与 deepGraph 之间需要建立稳定的 Command / Result Contract。
+## 计划中的仓库结构
 
-当前概念上至少需要表达：
+```text
+TopicLens-Access/
+├── README.md
+├── docs/
+│   ├── getting-started.md
+│   ├── official-web.md
+│   ├── wechat-mini-program.md
+│   ├── self-hosted-web.md
+│   ├── agent-skill.md
+│   ├── mcp.md
+│   └── api.md
+├── web/
+├── miniapp/
+├── skills/
+├── mcp/
+├── sdk/
+└── examples/
+```
 
-输入：
-
-- 用户意图或上游请求；
-- Research Plan 标识或临时研究目标；
-- 任务上下文和运行参数；
-- 时间、地区、来源等约束；
-- 期望输出形式。
-
-输出：
-
-- 任务标识；
-- 当前状态；
-- 阶段进展；
-- 最终结果；
-- 可恢复错误信息。
-
-具体 Schema 在 deepGraph API 设计阶段冻结。
-
-## 安全边界
-
-仓库中不得保存 API Token、密码、Cookie、SSH 私钥或其他实际凭据。运行时凭据由调用环境、凭据系统或环境变量提供。
+以上目录仅作为当前规划，实际代码结构将随着首批公开入口落地后调整。
 
 ## 当前状态
 
-当前已经确定：
+项目处于 Access Layer 重新定义阶段。
 
-- deepFlow 是统一 Research Entry / Interface Layer；
-- WorkBuddy 是当前重要入口，但不是长期唯一入口；
-- deepFlow 可以演化为 Skill、MCP、API 或其他 Agent 接入方式；
-- deepGraph 是有状态研究流程编排与综合后端；
-- deepField 是独立的行业原生研究服务，不属于 deepFlow 或 deepGraph 内部；
-- 当前 deepGraph 暂不依赖 deepField，只保留 Provider 接口；
-- deepFlow 与 deepGraph 通过标准化 Contract 解耦。
+近期优先事项：
 
-下一阶段继续与 deepGraph 对齐 Research Request / Command Contract，并保持入口层本身简单、无状态、可替换。
+1. 明确第一版公开服务接口；
+2. 确定官方 Web 的最小访问流程；
+3. 定义 `topiclens-research` Agent Skill；
+4. 建立自托管 Web 的最小参考实现；
+5. 整理统一的 Getting Started 与认证说明；
+6. 在公开前完成安全边界和敏感信息检查。
+
+---
+
+**TopicLens Access** 负责让 TopicLens 被使用；**TopicLens Core** 负责真正完成研究并积累知识。
